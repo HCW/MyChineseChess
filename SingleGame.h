@@ -13,6 +13,7 @@ class SingleGame:public Board
     void fakeMove(Step*step);//试着走一下
     void unfakeMove(Step*step);//回到原来原来状态
     int calcScore();//返回计算的局面分
+    int getMinScore();//获取第二步局面分最小值
 };
 
 #endif // SINGLEGAME_H

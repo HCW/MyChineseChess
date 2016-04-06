@@ -85,7 +85,7 @@ Step* SingleGame::getbestMove()
             maxScore=score;
             if(ret) delete ret;
             ret=step;
-        }
+        } 
         else
         {
             delete step;
