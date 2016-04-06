@@ -1,10 +1,10 @@
 #include <QApplication>
-#include "Board.h"
+#include "SingleGame.h"
 int main(int argc,char*argv[])
 {
     QApplication app(argc,argv);
 
-    Board b;
+    SingleGame b;
     b.show();
 
     return app.exec();

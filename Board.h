@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "Stone.h"
+#include "Step.h"
 class Board : public QWidget
 {
     Q_OBJECT
@@ -14,6 +15,8 @@ public:
     int m_r;//定义棋子的半径
     int m_seleceID;//保存被选中棋子的ID
     bool RedReady;//轮流走棋标志
+
+    QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
 
    void DrawStone(QPainter &painter,int i);//绘制棋子函数
    QPoint center(int row,int col);//计算棋子的中心点，即坐标
@@ -33,6 +36,20 @@ public:
 
    bool isPreventXiang(int moveID,int row,int col);//判断“象”是否被阻挡
    bool isPreventMa(int moveID,int row,int col);//判断“马”是否被阻挡
+
+   void click(QPoint pt);//鼠标点击棋盘
+   virtual void click(int selectID,int row,int col);//重载，并定义为虚函数
+   void TrySelectStone(int id);//尝试选择棋子
+   void TryMoveStone(int killid,int row,int col);//尝试移动棋子
+   bool canselect(int id);//判断是否可以选择棋子
+   bool samecolor(int selectid,int killid);//判断两个棋子颜色是否相同
+   int getStoneID(int row,int col);//传入行和列，返回棋子ID
+   void MoveStone(int seleceID,int row,int col,int killid);//移动棋子
+   void MoveStone(int seleceID,int row,int col);//移动棋子
+   void killStone(int killid);//吃掉棋子
+   void saveStep(int selectid,int killid,int row,int col,QVector<Step*>&_steps);//存储走的棋，用来实现悔棋的功能
+
+   void reliveStone(int id);//复活棋子
 signals:
 
 public slots:

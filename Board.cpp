@@ -4,7 +4,6 @@
 #include <math.h>
 Board::Board(QWidget *parent) : QWidget(parent)
 {
-
     this->setWindowTitle("中国象棋");
     for(int i=0;i<32;++i)
     {
@@ -24,7 +23,7 @@ Board::Board(QWidget *parent) : QWidget(parent)
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
 }
-void Board::paintEvent(QPaintEvent * ev)
+void Board::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     //绘制棋盘
@@ -265,6 +264,7 @@ void Board::DrawStone(QPainter &painter,int i)
              }
          }
 }
+//该函数的作用判断点击的坐标属于棋盘上的哪个位置，true表示得到点击的位置
 bool Board::getRowCol(QPoint pt, int &row, int &col)
 {
     //需要判断该坐标属于哪一个行哪一列，使用最笨的方法遍历棋盘所有的点，距离小于m_r半径说明该点属于所在行
@@ -290,60 +290,190 @@ bool Board::getRowCol(QPoint pt, int &row, int &col)
 void Board::mouseReleaseEvent(QMouseEvent *ev)
 {
     QPoint pt=ev->pos();//获得点击的坐标
-    //要判断该点是否有棋子，需要把坐标转换为行和列，并遍历棋子
-    int row,col;//保存选中的棋子的行列
+    click(pt);
+ //    //要判断该点是否有棋子，需要把坐标转换为行和列，并遍历棋子
+//    int row,col;//保存选中的棋子的行列
+//    int id;
+//    int clickID=-1;//保存被吃掉棋子的ＩＤ
+//    if(m_seleceID==-1)
+//    {
+//        if(getRowCol(pt,row,col))//定义一个函数进行处理
+//        {
+//            //选中了该棋子，找出该棋子ID，并改变其颜色用来表示被选中
+//            for(id=0;id<32;++id)
+//                if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
+//                    break;
+//            if(id<32)
+//            {
+//                if(RedReady==stone[id].m_red)//选中的棋子颜色和轮到其走的一致则可以选中
+//                {
+//                  m_seleceID=id;
+//                  update();
+//                }
+//                else
+//                    return;
+//            }
+//        }
+//        else
+//            return;
+//    }
+//    else //这里是走棋的实现，但是我们走棋前需要判定一下规则，就是能不能走
+//    {
+//           if(getRowCol(pt,row,col))//定义一个函数进行处理,获得第二次点击的点
+//            {
+//                for(id=0;id<32;++id)
+//                    if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
+//                        break;
+//                if(id<32)
+//                    clickID=id;//保存第二次点击的棋子位置的ID，没有棋子则为-1
+//                if(canMove(m_seleceID,row,col,clickID))//判断是否可走
+//                {
+//                    if(clickID!=-1)
+//                    {
+//                        stone[clickID].m_dead=true;//如果该点有棋子，则吃掉
+//                    }
+//                    stone[m_seleceID].m_row=row;//移动到该点
+//                    stone[m_seleceID].m_col=col;
+//                    m_seleceID=-1;//置标志
+//                    update();
+//                    RedReady=!RedReady;//每次走完取反
+//                }
+
+//            }
+//            else
+//                return;//没有找到点
+
+//    }
+
+}
+void Board::click(QPoint pt)
+{
+//    //要判断该点是否有棋子，需要把坐标转换为行和列，并遍历棋子
+//    int row,col;//保存选中的棋子的行列
+//    int id;
+//    int clickID=-1;//保存被吃掉棋子的ＩＤ
+//    if(m_seleceID==-1)
+//    {
+//        if(getRowCol(pt,row,col))//定义一个函数进行处理,true表示有棋子
+//        {
+//            //选中了该棋子，找出该棋子ID，并改变其颜色用来表示被选中
+//            id=getStoneID(row,col);
+//            if(id<32)
+//            {
+//                if(RedReady==stone[id].m_red)//选中的棋子颜色和轮到其走的一致则可以选中
+//                {
+//                  m_seleceID=id;
+//                  update();
+//                }
+//                else
+//                    return;
+//            }
+//        }
+//    }
+    //点击进来，先判断有没有点中棋子，没点中则直接返回
+    int row,col;
+    bool clickID=getRowCol(pt,row,col);//获取点击的坐标是否有棋子，有则返回true，row，col是引用传参，
+    if(!clickID) return;
+
+    int selectID=getStoneID(row,col);//获取点击选中的棋子ID
+    click(selectID,row,col);//重载调用该click函数
+}
+void Board::click(int selectID, int row, int col)
+{
+    if(m_seleceID==-1)//第一次点击，选中第一个棋子
+    {
+       TrySelectStone(selectID);
+    }
+    else//第二次点击，尝试移动棋子
+    {
+       TryMoveStone(selectID,row,col);
+    }
+}
+void Board::TryMoveStone(int killid, int row, int col)
+{
+   if(killid!=-1&&samecolor(m_seleceID,killid))//如果第二次点中了棋子并且棋子颜色是相同的则再次选中，不移动
+   {
+       TrySelectStone(killid);
+       return;
+   }
+   //待续
+   int rt=canMove(m_seleceID,row,col,killid);//判断是否该路线可以移动
+   if(rt)
+   {
+       MoveStone(m_seleceID,row,col,killid);
+       m_seleceID=-1;
+       update();
+   }
+
+}
+void Board::MoveStone(int seleceID, int row, int col, int killid)
+{
+    saveStep(seleceID,killid,row,col,m_steps);//存储步
+    killStone(killid);//吃掉棋子
+    MoveStone(seleceID,row,col);//真正移动棋子
+}
+void Board::MoveStone(int seleceID, int row, int col)
+{
+    stone[seleceID].m_row=row;//移动到该点
+    stone[seleceID].m_col=col;
+    update();
+    RedReady=!RedReady;//每次走完取反
+}
+void Board::saveStep(int selectid, int killid, int row, int col,QVector<Step*>&_steps)
+{
+    //存储一步棋，要保存原来的位置以及要移到位置
+    Step* step=new Step();
+    step->fromID=selectid;
+    step->fromRow=stone[selectid].m_row;
+    step->fromCol=stone[selectid].m_col;
+    step->toID=killid;
+    step->toRow=row;
+    step->toCol=col;
+
+    _steps.append(step);//添加到动态数组的尾部
+}
+void Board::reliveStone(int id)
+{
+    if(id==-1) return;
+
+    stone[id].m_dead=false;
+}
+void Board::killStone(int killid)
+{
+    if(killid==-1) return;//如果第二次没有选中棋子则不需吃子，直接移动
+    stone[killid].m_dead=true;//吃掉
+}
+void Board::TrySelectStone(int id)
+{
+    if(id==-1) return;//第一次点击，如果是-1说明没有点中棋子
+
+    if(!canselect(id)) return;//判断是否可以选择
+
+    //可以选择
+    m_seleceID=id;//把ID保存下来
+    update();
+
+}
+bool Board::samecolor(int selectid, int killid)
+{
+    if(selectid==-1|| killid==-1) return false;
+    return stone[selectid].m_red==stone[killid].m_red;
+}
+bool Board::canselect(int id)
+{
+     return RedReady==stone[id].m_red;//如果轮流走棋次序一致，返回true
+}
+int Board::getStoneID(int row, int col)
+{
     int id;
-    int clickID=-1;//保存被吃掉棋子的ＩＤ
-    if(m_seleceID==-1)
+    for(id=0;id<32;++id)
     {
-        if(getRowCol(pt,row,col))//定义一个函数进行处理
+        if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
         {
-            //选中了该棋子，找出该棋子ID，并改变其颜色用来表示被选中
-            for(id=0;id<32;++id)
-                if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
-                    break;
-            if(id<32)
-            {
-                if(RedReady==stone[id].m_red)//选中的棋子颜色和轮到其走的一致则可以选中
-                {
-                  m_seleceID=id;
-                  update();
-                }
-                else
-                    return;
-            }
+            return id;//该点击的点有棋子返回该棋子ID号
         }
-        else
-            return;
     }
-    else //这里是走棋的实现，但是我们走棋前需要判定一下规则，就是能不能走
-    {
-           if(getRowCol(pt,row,col))//定义一个函数进行处理,获得第二次点击的点
-            {
-                for(id=0;id<32;++id)
-                    if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
-                        break;
-                if(id<32)
-                    clickID=id;//保存第二次点击的位置的ID
-                if(canMove(m_seleceID,row,col,clickID))//判断是否可走
-                {
-                    if(clickID!=-1)
-                    {
-                        stone[clickID].m_dead=true;//如果该点有棋子，则吃掉
-                    }
-                    stone[m_seleceID].m_row=row;//移动到该点
-                    stone[m_seleceID].m_col=col;
-                    m_seleceID=-1;//置标志
-                    update();
-                    RedReady=!RedReady;//每次走完取反
-                }
-
-            }
-            else
-                return;//没有找到点
-
-    }
-
+    return -1;//该点击的点没有棋子则返回-1
 }
 bool Board::canMove(int moveID, int row, int col, int killID)
 {
@@ -395,7 +525,7 @@ bool Board::canMove(int moveID, int row, int col, int killID)
     }
     return true;
 }
-bool Board::canMoveBingZu(int moveID, int row, int col, int killID)
+bool Board::canMoveBingZu(int moveID, int row, int col, int )
 {
     //兵、卒的走棋规则，也是只能走直线，而且只能走一格，只能前进，没过河之前只能前进，不能左右和后退，
     //过河之后可以左右，不可后退
@@ -441,7 +571,7 @@ bool Board::canMoveBingZu(int moveID, int row, int col, int killID)
     return true;
 
 }
-bool Board::canMoveJu(int moveID, int row, int col, int killID)
+bool Board::canMoveJu(int moveID, int row, int col, int )
 {
     /*车的走法规则，也是只能走直线*/
     //1，不是直线，错误走法
@@ -513,7 +643,7 @@ bool Board::canMoveJu(int moveID, int row, int col, int killID)
     }
 
 }
-bool Board::canMovePao(int moveID, int row, int col, int killID)
+bool Board::canMovePao(int moveID, int row, int col, int )
 {
  /*
 炮的走棋规则，只能直线走
@@ -661,7 +791,7 @@ bool Board::canMovePao(int moveID, int row, int col, int killID)
           }
     }
 }
-bool Board::canMoveJiang(int moveID, int row, int col, int killID)
+bool Board::canMoveJiang(int moveID, int row, int col, int)
 {
     /*
      将或者帅的移动，规则：
@@ -701,7 +831,7 @@ bool Board::canMoveJiang(int moveID, int row, int col, int killID)
 
     return true;
 }
- bool Board::canMoveShi(int moveID,int row,int col,int killID)
+ bool Board::canMoveShi(int moveID,int row,int col,int )
  {
      /*
       士的移动，规则：
@@ -761,7 +891,7 @@ bool Board::canMoveJiang(int moveID, int row, int col, int killID)
          return false;
 
  }
- bool Board::canMoveXiang(int moveID,int row,int col,int killID)
+ bool Board::canMoveXiang(int moveID,int row,int col,int )
  {
      /*
       象的移动，规则，只能在走“田字”的对角线，
@@ -979,7 +1109,7 @@ bool Board::canMoveJiang(int moveID, int row, int col, int killID)
 
 
  }
-bool Board::canMoveMa(int moveID, int row, int col, int killID)
+bool Board::canMoveMa(int moveID, int row, int col, int )
 {
     /*马走的是“日”字*/
     int dx=stone[moveID].m_row-row;
