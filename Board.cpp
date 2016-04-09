@@ -2,221 +2,102 @@
 #include <QPainter>
 #include<QMouseEvent>
 #include <math.h>
+#include<QMessageBox>
+#include<QDebug>
 Board::Board(QWidget *parent) : QWidget(parent)
 {
     this->setWindowTitle("中国象棋");
-    for(int i=0;i<32;++i)
-    {
-        if(i<16)//黑方，0-15为棋子的ID
-        {
-            stone[i].m_red=false;
-            stone[i].StoneInit(i);
-            stone[i].m_dead=false;
-        }
-        else//  红方，16-31，棋子ID
-        {
-            stone[i].m_red=true;
-            stone[i].StoneInit(i);
-            stone[i].m_dead=false;
-        }
-    }
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
+    m_sides=true;//红方在下边
+    InitStoneSides();//初始化棋子
+
+}
+void Board::InitStoneSides()
+{
+    for(int i=0;i<32;++i)
+    {
+        if(m_sides)
+        {
+            if(i<16)//黑方，0-15为棋子的ID
+            {
+                stone[i].m_red=false;
+                stone[i].StoneInit(i);
+                stone[i].m_dead=false;
+            }
+            else//  红方，16-31，棋子ID
+            {
+                stone[i].m_red=true;
+                stone[i].StoneInit(i);
+                stone[i].m_dead=false;
+            }
+        }
+        else
+        {
+            if(i>=16)//黑方，16-31为棋子的ID
+            {
+                stone[i].m_red=false;
+                stone[i].StoneInit(i);
+                stone[i].m_dead=false;
+            }
+            else//  红方，0-15，棋子ID
+            {
+                stone[i].m_red=true;
+                stone[i].StoneInit(i);
+                stone[i].m_dead=false;
+            }
+        }
+    }
 }
 void Board::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     //绘制棋盘
-    int d=40;//棋子直径，用来衡量棋盘的大小
-    m_r=d/2;//保存半径
-    for(int i=1;i<=10;++i)//绘制10行
-    {
-        painter.drawLine(QPoint(d,d*i),QPoint(9*d,d*i));
-    }
-
-    for(int i=1;i<=9;++i)//绘制9条竖线
-    {
-        if(i==1||i==9)
-            painter.drawLine(QPoint(d*i,d),QPoint(d*i,d*10));
-        else
-        {
-            painter.drawLine(QPoint(d*i,d),QPoint(d*i,d*5));
-             painter.drawLine(QPoint(d*i,6*d),QPoint(d*i,d*10));
-        }
-    }
-    //绘制棋盘中间的九宫格
-      painter.drawLine(QPoint(4*d,d),QPoint(d*6,d*3));
-      painter.drawLine(QPoint(6*d,d),QPoint(d*4,d*3));
-
-      painter.drawLine(QPoint(4*d,8*d),QPoint(d*6,d*10));
-      painter.drawLine(QPoint(6*d,d*8),QPoint(d*4,d*10));
-
-      //绘制棋盘的特殊形状
-      //上方、左边 炮的位置
-      painter.drawLine(QPoint(2*d-4,3*d-15),QPoint(d*2-4,d*3-4));
-      painter.drawLine(QPoint(2*d-15,d*3-4),QPoint(d*2-4,d*3-4));
-
-      painter.drawLine(QPoint(2*d+4,3*d-15),QPoint(d*2+4,d*3-4));
-      painter.drawLine(QPoint(2*d+15,d*3-4),QPoint(d*2+4,d*3-4));
-
-      painter.drawLine(QPoint(2*d-15,3*d+4),QPoint(d*2-4,d*3+4));
-      painter.drawLine(QPoint(2*d-4,d*3+15),QPoint(d*2-4,d*3+4));
-
-      painter.drawLine(QPoint(2*d+4,3*d+4),QPoint(d*2+15,d*3+4));
-      painter.drawLine(QPoint(2*d+4,d*3+15),QPoint(2*d+4,3*d+4));
-
-       //上方、右边 炮的位置
-      painter.drawLine(QPoint(8*d-4,3*d-15),QPoint(d*8-4,d*3-4));
-      painter.drawLine(QPoint(8*d-15,d*3-4),QPoint(d*8-4,d*3-4));
-
-      painter.drawLine(QPoint(8*d+4,3*d-15),QPoint(d*8+4,d*3-4));
-      painter.drawLine(QPoint(8*d+15,d*3-4),QPoint(d*8+4,d*3-4));
-
-      painter.drawLine(QPoint(8*d-15,3*d+4),QPoint(d*8-4,d*3+4));
-      painter.drawLine(QPoint(8*d-4,d*3+15),QPoint(d*8-4,d*3+4));
-
-      painter.drawLine(QPoint(8*d+4,3*d+4),QPoint(d*8+15,d*3+4));
-      painter.drawLine(QPoint(8*d+4,d*3+15),QPoint(8*d+4,3*d+4));
-
-
-      //下方、左边 炮的位置
-      painter.drawLine(QPoint(2*d-4,8*d-15),QPoint(d*2-4,d*8-4));
-      painter.drawLine(QPoint(2*d-15,d*8-4),QPoint(d*2-4,d*8-4));
-
-      painter.drawLine(QPoint(2*d+4,8*d-15),QPoint(d*2+4,d*8-4));
-      painter.drawLine(QPoint(2*d+15,d*8-4),QPoint(d*2+4,d*8-4));
-
-      painter.drawLine(QPoint(2*d-15,8*d+4),QPoint(d*2-4,d*8+4));
-      painter.drawLine(QPoint(2*d-4,d*8+15),QPoint(d*2-4,d*8+4));
-
-      painter.drawLine(QPoint(2*d+4,8*d+4),QPoint(d*2+15,d*8+4));
-      painter.drawLine(QPoint(2*d+4,d*8+15),QPoint(2*d+4,8*d+4));
-
-
-      //下方、右边 炮的位置
-     painter.drawLine(QPoint(8*d-4,8*d-15),QPoint(d*8-4,d*8-4));
-     painter.drawLine(QPoint(8*d-15,d*8-4),QPoint(d*8-4,d*8-4));
-
-     painter.drawLine(QPoint(8*d+4,8*d-15),QPoint(d*8+4,d*8-4));
-     painter.drawLine(QPoint(8*d+15,d*8-4),QPoint(d*8+4,d*8-4));
-
-     painter.drawLine(QPoint(8*d-15,8*d+4),QPoint(d*8-4,d*8+4));
-     painter.drawLine(QPoint(8*d-4,d*8+15),QPoint(d*8-4,d*8+4));
-
-     painter.drawLine(QPoint(8*d+4,8*d+4),QPoint(d*8+15,d*8+4));
-     painter.drawLine(QPoint(8*d+4,d*8+15),QPoint(8*d+4,8*d+4));
-
-     //卒子位置，上方，左边角 1
-     painter.drawLine(QPoint(1*d+4,4*d-15),QPoint(d*1+4,d*4-4));
-     painter.drawLine(QPoint(1*d+15,d*4-4),QPoint(d*1+4,d*4-4));
-
-     painter.drawLine(QPoint(1*d+4,4*d+4),QPoint(d*1+15,d*4+4));
-     painter.drawLine(QPoint(1*d+4,d*4+15),QPoint(1*d+4,4*d+4));
-
-     //卒子位置，上方， 3 位
-     painter.drawLine(QPoint(3*d-4,4*d-15),QPoint(d*3-4,d*4-4));
-     painter.drawLine(QPoint(3*d-15,d*4-4),QPoint(d*3-4,d*4-4));
-
-     painter.drawLine(QPoint(3*d+4,4*d-15),QPoint(d*3+4,d*4-4));
-     painter.drawLine(QPoint(3*d+15,d*4-4),QPoint(d*3+4,d*4-4));
-
-     painter.drawLine(QPoint(3*d-15,4*d+4),QPoint(d*3-4,d*4+4));
-     painter.drawLine(QPoint(3*d-4,d*4+15),QPoint(d*3-4,d*4+4));
-
-     painter.drawLine(QPoint(3*d+4,4*d+4),QPoint(d*3+15,d*4+4));
-     painter.drawLine(QPoint(3*d+4,d*4+15),QPoint(3*d+4,4*d+4));
-
-     //卒子位置，上方， 5 位
-     painter.drawLine(QPoint(5*d-4,4*d-15),QPoint(d*5-4,d*4-4));
-     painter.drawLine(QPoint(5*d-15,d*4-4),QPoint(d*5-4,d*4-4));
-
-     painter.drawLine(QPoint(5*d+4,4*d-15),QPoint(d*5+4,d*4-4));
-     painter.drawLine(QPoint(5*d+15,d*4-4),QPoint(d*5+4,d*4-4));
-
-     painter.drawLine(QPoint(5*d-15,4*d+4),QPoint(d*5-4,d*4+4));
-     painter.drawLine(QPoint(5*d-4,d*4+15),QPoint(d*5-4,d*4+4));
-
-     painter.drawLine(QPoint(5*d+4,4*d+4),QPoint(d*5+15,d*4+4));
-     painter.drawLine(QPoint(5*d+4,d*4+15),QPoint(5*d+4,4*d+4));
-
-     //卒子位置，上方， 7 位
-     painter.drawLine(QPoint(7*d-4,4*d-15),QPoint(d*7-4,d*4-4));
-     painter.drawLine(QPoint(7*d-15,d*4-4),QPoint(d*7-4,d*4-4));
-
-     painter.drawLine(QPoint(7*d+4,4*d-15),QPoint(d*7+4,d*4-4));
-     painter.drawLine(QPoint(7*d+15,d*4-4),QPoint(d*7+4,d*4-4));
-
-     painter.drawLine(QPoint(7*d-15,4*d+4),QPoint(d*7-4,d*4+4));
-     painter.drawLine(QPoint(7*d-4,d*4+15),QPoint(d*7-4,d*4+4));
-
-     painter.drawLine(QPoint(7*d+4,4*d+4),QPoint(d*7+15,d*4+4));
-     painter.drawLine(QPoint(7*d+4,d*4+15),QPoint(7*d+4,4*d+4));
-
-     //卒子位置，上方， 9 位
-     painter.drawLine(QPoint(9*d-4,4*d-15),QPoint(d*9-4,d*4-4));
-     painter.drawLine(QPoint(9*d-15,d*4-4),QPoint(d*9-4,d*4-4));
-
-     painter.drawLine(QPoint(9*d-15,4*d+4),QPoint(d*9-4,d*4+4));
-     painter.drawLine(QPoint(9*d-4,d*4+15),QPoint(d*9-4,d*4+4));
-
-    //卒子下方
-     //卒子位置，下方，左边角 1
-     painter.drawLine(QPoint(1*d+4,7*d-15),QPoint(d*1+4,d*7-4));
-     painter.drawLine(QPoint(1*d+15,d*7-4),QPoint(d*1+4,d*7-4));
-
-     painter.drawLine(QPoint(1*d+4,7*d+4),QPoint(d*1+15,d*7+4));
-     painter.drawLine(QPoint(1*d+4,d*7+15),QPoint(1*d+4,7*d+4));
-
-     //卒子位置，下方， 3 位
-     painter.drawLine(QPoint(3*d-4,7*d-15),QPoint(d*3-4,d*7-4));
-     painter.drawLine(QPoint(3*d-15,d*7-4),QPoint(d*3-4,d*7-4));
-
-     painter.drawLine(QPoint(3*d+4,7*d-15),QPoint(d*3+4,d*7-4));
-     painter.drawLine(QPoint(3*d+15,d*7-4),QPoint(d*3+4,d*7-4));
-
-     painter.drawLine(QPoint(3*d-15,7*d+4),QPoint(d*3-4,d*7+4));
-     painter.drawLine(QPoint(3*d-4,d*7+15),QPoint(d*3-4,d*7+4));
-
-     painter.drawLine(QPoint(3*d+4,7*d+4),QPoint(d*3+15,d*7+4));
-     painter.drawLine(QPoint(3*d+4,d*7+15),QPoint(3*d+4,7*d+4));
-
-     //卒子位置，下方， 5 位
-     painter.drawLine(QPoint(5*d-4,7*d-15),QPoint(d*5-4,d*7-4));
-     painter.drawLine(QPoint(5*d-15,d*7-4),QPoint(d*5-4,d*7-4));
-
-     painter.drawLine(QPoint(5*d+4,7*d-15),QPoint(d*5+4,d*7-4));
-     painter.drawLine(QPoint(5*d+15,d*7-4),QPoint(d*5+4,d*7-4));
-
-     painter.drawLine(QPoint(5*d-15,7*d+4),QPoint(d*5-4,d*7+4));
-     painter.drawLine(QPoint(5*d-4,d*7+15),QPoint(d*5-4,d*7+4));
-
-     painter.drawLine(QPoint(5*d+4,7*d+4),QPoint(d*5+15,d*7+4));
-     painter.drawLine(QPoint(5*d+4,d*7+15),QPoint(5*d+4,7*d+4));
-
-     //卒子位置，下方， 7 位
-     painter.drawLine(QPoint(7*d-4,7*d-15),QPoint(d*7-4,d*7-4));
-     painter.drawLine(QPoint(7*d-15,d*7-4),QPoint(d*7-4,d*7-4));
-
-     painter.drawLine(QPoint(7*d+4,7*d-15),QPoint(d*7+4,d*7-4));
-     painter.drawLine(QPoint(7*d+15,d*7-4),QPoint(d*7+4,d*7-4));
-
-     painter.drawLine(QPoint(7*d-15,7*d+4),QPoint(d*7-4,d*7+4));
-     painter.drawLine(QPoint(7*d-4,d*7+15),QPoint(d*7-4,d*7+4));
-
-     painter.drawLine(QPoint(7*d+4,7*d+4),QPoint(d*7+15,d*7+4));
-     painter.drawLine(QPoint(7*d+4,d*7+15),QPoint(7*d+4,7*d+4));
-
-     //卒子位置，下方， 9 位
-     painter.drawLine(QPoint(9*d-4,7*d-15),QPoint(d*9-4,d*7-4));
-     painter.drawLine(QPoint(9*d-15,d*7-4),QPoint(d*9-4,d*7-4));
-
-     painter.drawLine(QPoint(9*d-15,7*d+4),QPoint(d*9-4,d*7+4));
-     painter.drawLine(QPoint(9*d-4,d*7+15),QPoint(d*9-4,d*7+4));
-
+    DrawBoard(painter);
      //绘制棋子
      for(int j=0;j<32;++j)
-        DrawStone(painter,j);
+         {
+            DrawStone(painter,j);
+           // if(!isWin(j))//判断胜负
+               // break;
+                isWin(j);
+         }
 
+}
+bool Board::isWin(int id)
+{
+    static bool statusflag=true;//提示框标志
+    QMessageBox::StandardButton bt;
+   if(statusflag)
+   {
+        if(stone[id].m_type==Stone::JIANG)
+        {
+            if(stone[id].m_dead)
+                bt=QMessageBox::question(this,"胜负情况","红方胜，是否再来一局？");
+        }
+        if(stone[id].m_type==Stone::SHUAI)
+        {
+            if(stone[id].m_dead)
+                 bt=QMessageBox::question(this,"胜负情况","黑方胜，是否再来一局？");
+        }
+    }
+    if(bt==QMessageBox::Yes)
+    {
+        restoreBoard();//还原棋盘，重来一局
+    }
+    else if(bt==QMessageBox::No)
+    {
+        m_seleceID=-100;//暂时这样先，还不完善
+        statusflag=false;
+    }
+    return true;
+}
+void Board::restoreBoard()
+{
+    m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
+    RedReady=true;//红方先行
+    m_sides=true;//红方在下边
+    InitStoneSides();//初始化棋子
 }
 QPoint Board::center(int row, int col)
 {
@@ -291,85 +172,9 @@ void Board::mouseReleaseEvent(QMouseEvent *ev)
 {
     QPoint pt=ev->pos();//获得点击的坐标
     click(pt);
- //    //要判断该点是否有棋子，需要把坐标转换为行和列，并遍历棋子
-//    int row,col;//保存选中的棋子的行列
-//    int id;
-//    int clickID=-1;//保存被吃掉棋子的ＩＤ
-//    if(m_seleceID==-1)
-//    {
-//        if(getRowCol(pt,row,col))//定义一个函数进行处理
-//        {
-//            //选中了该棋子，找出该棋子ID，并改变其颜色用来表示被选中
-//            for(id=0;id<32;++id)
-//                if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
-//                    break;
-//            if(id<32)
-//            {
-//                if(RedReady==stone[id].m_red)//选中的棋子颜色和轮到其走的一致则可以选中
-//                {
-//                  m_seleceID=id;
-//                  update();
-//                }
-//                else
-//                    return;
-//            }
-//        }
-//        else
-//            return;
-//    }
-//    else //这里是走棋的实现，但是我们走棋前需要判定一下规则，就是能不能走
-//    {
-//           if(getRowCol(pt,row,col))//定义一个函数进行处理,获得第二次点击的点
-//            {
-//                for(id=0;id<32;++id)
-//                    if(stone[id].m_row==row&&stone[id].m_col==col&&stone[id].m_dead==false)
-//                        break;
-//                if(id<32)
-//                    clickID=id;//保存第二次点击的棋子位置的ID，没有棋子则为-1
-//                if(canMove(m_seleceID,row,col,clickID))//判断是否可走
-//                {
-//                    if(clickID!=-1)
-//                    {
-//                        stone[clickID].m_dead=true;//如果该点有棋子，则吃掉
-//                    }
-//                    stone[m_seleceID].m_row=row;//移动到该点
-//                    stone[m_seleceID].m_col=col;
-//                    m_seleceID=-1;//置标志
-//                    update();
-//                    RedReady=!RedReady;//每次走完取反
-//                }
-
-//            }
-//            else
-//                return;//没有找到点
-
-//    }
-
 }
 void Board::click(QPoint pt)
 {
-//    //要判断该点是否有棋子，需要把坐标转换为行和列，并遍历棋子
-//    int row,col;//保存选中的棋子的行列
-//    int id;
-//    int clickID=-1;//保存被吃掉棋子的ＩＤ
-//    if(m_seleceID==-1)
-//    {
-//        if(getRowCol(pt,row,col))//定义一个函数进行处理,true表示有棋子
-//        {
-//            //选中了该棋子，找出该棋子ID，并改变其颜色用来表示被选中
-//            id=getStoneID(row,col);
-//            if(id<32)
-//            {
-//                if(RedReady==stone[id].m_red)//选中的棋子颜色和轮到其走的一致则可以选中
-//                {
-//                  m_seleceID=id;
-//                  update();
-//                }
-//                else
-//                    return;
-//            }
-//        }
-//    }
     //点击进来，先判断有没有点中棋子，没点中则直接返回
     int row,col;
     bool clickID=getRowCol(pt,row,col);//获取点击的坐标是否有棋子，有则返回true，row，col是引用传参，
@@ -1133,8 +938,195 @@ bool Board::canMoveMa(int moveID, int row, int col, int )
     else
         return false;
 }
+void Board::DrawBoard(QPainter &painter)
+{
+    //绘制棋盘
+    int d=40;//棋子直径，用来衡量棋盘的大小
+    m_r=d/2;//保存半径
+    for(int i=1;i<=10;++i)//绘制10行
+    {
+        painter.drawLine(QPoint(d,d*i),QPoint(9*d,d*i));
+    }
+
+    for(int i=1;i<=9;++i)//绘制9条竖线
+    {
+        if(i==1||i==9)
+            painter.drawLine(QPoint(d*i,d),QPoint(d*i,d*10));
+        else
+        {
+            painter.drawLine(QPoint(d*i,d),QPoint(d*i,d*5));
+             painter.drawLine(QPoint(d*i,6*d),QPoint(d*i,d*10));
+        }
+    }
+    //绘制棋盘中间的九宫格
+      painter.drawLine(QPoint(4*d,d),QPoint(d*6,d*3));
+      painter.drawLine(QPoint(6*d,d),QPoint(d*4,d*3));
+
+      painter.drawLine(QPoint(4*d,8*d),QPoint(d*6,d*10));
+      painter.drawLine(QPoint(6*d,d*8),QPoint(d*4,d*10));
+
+      //绘制棋盘的特殊形状
+      //上方、左边 炮的位置
+      painter.drawLine(QPoint(2*d-4,3*d-15),QPoint(d*2-4,d*3-4));
+      painter.drawLine(QPoint(2*d-15,d*3-4),QPoint(d*2-4,d*3-4));
+
+      painter.drawLine(QPoint(2*d+4,3*d-15),QPoint(d*2+4,d*3-4));
+      painter.drawLine(QPoint(2*d+15,d*3-4),QPoint(d*2+4,d*3-4));
+
+      painter.drawLine(QPoint(2*d-15,3*d+4),QPoint(d*2-4,d*3+4));
+      painter.drawLine(QPoint(2*d-4,d*3+15),QPoint(d*2-4,d*3+4));
+
+      painter.drawLine(QPoint(2*d+4,3*d+4),QPoint(d*2+15,d*3+4));
+      painter.drawLine(QPoint(2*d+4,d*3+15),QPoint(2*d+4,3*d+4));
+
+       //上方、右边 炮的位置
+      painter.drawLine(QPoint(8*d-4,3*d-15),QPoint(d*8-4,d*3-4));
+      painter.drawLine(QPoint(8*d-15,d*3-4),QPoint(d*8-4,d*3-4));
+
+      painter.drawLine(QPoint(8*d+4,3*d-15),QPoint(d*8+4,d*3-4));
+      painter.drawLine(QPoint(8*d+15,d*3-4),QPoint(d*8+4,d*3-4));
+
+      painter.drawLine(QPoint(8*d-15,3*d+4),QPoint(d*8-4,d*3+4));
+      painter.drawLine(QPoint(8*d-4,d*3+15),QPoint(d*8-4,d*3+4));
+
+      painter.drawLine(QPoint(8*d+4,3*d+4),QPoint(d*8+15,d*3+4));
+      painter.drawLine(QPoint(8*d+4,d*3+15),QPoint(8*d+4,3*d+4));
 
 
+      //下方、左边 炮的位置
+      painter.drawLine(QPoint(2*d-4,8*d-15),QPoint(d*2-4,d*8-4));
+      painter.drawLine(QPoint(2*d-15,d*8-4),QPoint(d*2-4,d*8-4));
+
+      painter.drawLine(QPoint(2*d+4,8*d-15),QPoint(d*2+4,d*8-4));
+      painter.drawLine(QPoint(2*d+15,d*8-4),QPoint(d*2+4,d*8-4));
+
+      painter.drawLine(QPoint(2*d-15,8*d+4),QPoint(d*2-4,d*8+4));
+      painter.drawLine(QPoint(2*d-4,d*8+15),QPoint(d*2-4,d*8+4));
+
+      painter.drawLine(QPoint(2*d+4,8*d+4),QPoint(d*2+15,d*8+4));
+      painter.drawLine(QPoint(2*d+4,d*8+15),QPoint(2*d+4,8*d+4));
+
+
+      //下方、右边 炮的位置
+     painter.drawLine(QPoint(8*d-4,8*d-15),QPoint(d*8-4,d*8-4));
+     painter.drawLine(QPoint(8*d-15,d*8-4),QPoint(d*8-4,d*8-4));
+
+     painter.drawLine(QPoint(8*d+4,8*d-15),QPoint(d*8+4,d*8-4));
+     painter.drawLine(QPoint(8*d+15,d*8-4),QPoint(d*8+4,d*8-4));
+
+     painter.drawLine(QPoint(8*d-15,8*d+4),QPoint(d*8-4,d*8+4));
+     painter.drawLine(QPoint(8*d-4,d*8+15),QPoint(d*8-4,d*8+4));
+
+     painter.drawLine(QPoint(8*d+4,8*d+4),QPoint(d*8+15,d*8+4));
+     painter.drawLine(QPoint(8*d+4,d*8+15),QPoint(8*d+4,8*d+4));
+
+     //卒子位置，上方，左边角 1
+     painter.drawLine(QPoint(1*d+4,4*d-15),QPoint(d*1+4,d*4-4));
+     painter.drawLine(QPoint(1*d+15,d*4-4),QPoint(d*1+4,d*4-4));
+
+     painter.drawLine(QPoint(1*d+4,4*d+4),QPoint(d*1+15,d*4+4));
+     painter.drawLine(QPoint(1*d+4,d*4+15),QPoint(1*d+4,4*d+4));
+
+     //卒子位置，上方， 3 位
+     painter.drawLine(QPoint(3*d-4,4*d-15),QPoint(d*3-4,d*4-4));
+     painter.drawLine(QPoint(3*d-15,d*4-4),QPoint(d*3-4,d*4-4));
+
+     painter.drawLine(QPoint(3*d+4,4*d-15),QPoint(d*3+4,d*4-4));
+     painter.drawLine(QPoint(3*d+15,d*4-4),QPoint(d*3+4,d*4-4));
+
+     painter.drawLine(QPoint(3*d-15,4*d+4),QPoint(d*3-4,d*4+4));
+     painter.drawLine(QPoint(3*d-4,d*4+15),QPoint(d*3-4,d*4+4));
+
+     painter.drawLine(QPoint(3*d+4,4*d+4),QPoint(d*3+15,d*4+4));
+     painter.drawLine(QPoint(3*d+4,d*4+15),QPoint(3*d+4,4*d+4));
+
+     //卒子位置，上方， 5 位
+     painter.drawLine(QPoint(5*d-4,4*d-15),QPoint(d*5-4,d*4-4));
+     painter.drawLine(QPoint(5*d-15,d*4-4),QPoint(d*5-4,d*4-4));
+
+     painter.drawLine(QPoint(5*d+4,4*d-15),QPoint(d*5+4,d*4-4));
+     painter.drawLine(QPoint(5*d+15,d*4-4),QPoint(d*5+4,d*4-4));
+
+     painter.drawLine(QPoint(5*d-15,4*d+4),QPoint(d*5-4,d*4+4));
+     painter.drawLine(QPoint(5*d-4,d*4+15),QPoint(d*5-4,d*4+4));
+
+     painter.drawLine(QPoint(5*d+4,4*d+4),QPoint(d*5+15,d*4+4));
+     painter.drawLine(QPoint(5*d+4,d*4+15),QPoint(5*d+4,4*d+4));
+
+     //卒子位置，上方， 7 位
+     painter.drawLine(QPoint(7*d-4,4*d-15),QPoint(d*7-4,d*4-4));
+     painter.drawLine(QPoint(7*d-15,d*4-4),QPoint(d*7-4,d*4-4));
+
+     painter.drawLine(QPoint(7*d+4,4*d-15),QPoint(d*7+4,d*4-4));
+     painter.drawLine(QPoint(7*d+15,d*4-4),QPoint(d*7+4,d*4-4));
+
+     painter.drawLine(QPoint(7*d-15,4*d+4),QPoint(d*7-4,d*4+4));
+     painter.drawLine(QPoint(7*d-4,d*4+15),QPoint(d*7-4,d*4+4));
+
+     painter.drawLine(QPoint(7*d+4,4*d+4),QPoint(d*7+15,d*4+4));
+     painter.drawLine(QPoint(7*d+4,d*4+15),QPoint(7*d+4,4*d+4));
+
+     //卒子位置，上方， 9 位
+     painter.drawLine(QPoint(9*d-4,4*d-15),QPoint(d*9-4,d*4-4));
+     painter.drawLine(QPoint(9*d-15,d*4-4),QPoint(d*9-4,d*4-4));
+
+     painter.drawLine(QPoint(9*d-15,4*d+4),QPoint(d*9-4,d*4+4));
+     painter.drawLine(QPoint(9*d-4,d*4+15),QPoint(d*9-4,d*4+4));
+
+    //卒子下方
+     //卒子位置，下方，左边角 1
+     painter.drawLine(QPoint(1*d+4,7*d-15),QPoint(d*1+4,d*7-4));
+     painter.drawLine(QPoint(1*d+15,d*7-4),QPoint(d*1+4,d*7-4));
+
+     painter.drawLine(QPoint(1*d+4,7*d+4),QPoint(d*1+15,d*7+4));
+     painter.drawLine(QPoint(1*d+4,d*7+15),QPoint(1*d+4,7*d+4));
+
+     //卒子位置，下方， 3 位
+     painter.drawLine(QPoint(3*d-4,7*d-15),QPoint(d*3-4,d*7-4));
+     painter.drawLine(QPoint(3*d-15,d*7-4),QPoint(d*3-4,d*7-4));
+
+     painter.drawLine(QPoint(3*d+4,7*d-15),QPoint(d*3+4,d*7-4));
+     painter.drawLine(QPoint(3*d+15,d*7-4),QPoint(d*3+4,d*7-4));
+
+     painter.drawLine(QPoint(3*d-15,7*d+4),QPoint(d*3-4,d*7+4));
+     painter.drawLine(QPoint(3*d-4,d*7+15),QPoint(d*3-4,d*7+4));
+
+     painter.drawLine(QPoint(3*d+4,7*d+4),QPoint(d*3+15,d*7+4));
+     painter.drawLine(QPoint(3*d+4,d*7+15),QPoint(3*d+4,7*d+4));
+
+     //卒子位置，下方， 5 位
+     painter.drawLine(QPoint(5*d-4,7*d-15),QPoint(d*5-4,d*7-4));
+     painter.drawLine(QPoint(5*d-15,d*7-4),QPoint(d*5-4,d*7-4));
+
+     painter.drawLine(QPoint(5*d+4,7*d-15),QPoint(d*5+4,d*7-4));
+     painter.drawLine(QPoint(5*d+15,d*7-4),QPoint(d*5+4,d*7-4));
+
+     painter.drawLine(QPoint(5*d-15,7*d+4),QPoint(d*5-4,d*7+4));
+     painter.drawLine(QPoint(5*d-4,d*7+15),QPoint(d*5-4,d*7+4));
+
+     painter.drawLine(QPoint(5*d+4,7*d+4),QPoint(d*5+15,d*7+4));
+     painter.drawLine(QPoint(5*d+4,d*7+15),QPoint(5*d+4,7*d+4));
+
+     //卒子位置，下方， 7 位
+     painter.drawLine(QPoint(7*d-4,7*d-15),QPoint(d*7-4,d*7-4));
+     painter.drawLine(QPoint(7*d-15,d*7-4),QPoint(d*7-4,d*7-4));
+
+     painter.drawLine(QPoint(7*d+4,7*d-15),QPoint(d*7+4,d*7-4));
+     painter.drawLine(QPoint(7*d+15,d*7-4),QPoint(d*7+4,d*7-4));
+
+     painter.drawLine(QPoint(7*d-15,7*d+4),QPoint(d*7-4,d*7+4));
+     painter.drawLine(QPoint(7*d-4,d*7+15),QPoint(d*7-4,d*7+4));
+
+     painter.drawLine(QPoint(7*d+4,7*d+4),QPoint(d*7+15,d*7+4));
+     painter.drawLine(QPoint(7*d+4,d*7+15),QPoint(7*d+4,7*d+4));
+
+     //卒子位置，下方， 9 位
+     painter.drawLine(QPoint(9*d-4,7*d-15),QPoint(d*9-4,d*7-4));
+     painter.drawLine(QPoint(9*d-15,d*7-4),QPoint(d*9-4,d*7-4));
+
+     painter.drawLine(QPoint(9*d-15,7*d+4),QPoint(d*9-4,d*7+4));
+     painter.drawLine(QPoint(9*d-4,d*7+15),QPoint(d*9-4,d*7+4));
+}
 
 
 

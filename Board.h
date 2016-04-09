@@ -15,9 +15,12 @@ public:
     int m_r;//定义棋子的半径
     int m_seleceID;//保存被选中棋子的ID
     bool RedReady;//轮流走棋标志
+    bool m_sides;//红方棋子在棋盘下边还是上边，如果等于true则在下边，false则在上边
 
     QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
 
+   void InitStoneSides();//初始化棋子
+   void DrawBoard(QPainter &painter);//绘制棋盘
    void DrawStone(QPainter &painter,int i);//绘制棋子函数
    QPoint center(int row,int col);//计算棋子的中心点，即坐标
    virtual void paintEvent(QPaintEvent *);
@@ -50,6 +53,8 @@ public:
    void saveStep(int selectid,int killid,int row,int col,QVector<Step*>&_steps);//存储走的棋，用来实现悔棋的功能
 
    void reliveStone(int id);//复活棋子
+   bool isWin(int id);//判断是否胜利，胜利则结束游戏
+   void restoreBoard();//还原棋盘到一开始的时候
 signals:
 
 public slots:
