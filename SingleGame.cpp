@@ -1,20 +1,40 @@
 #include "SingleGame.h"
-
+#include <QTimer>
 void SingleGame::click(int selectID, int row, int col)
 {
     //人机对弈，电脑执黑
+//    if(!this->RedReady)
+//     return;
+
+//    Board::click(selectID,row,col);//如果人走，调用父类函数
+
+//    if(!this->RedReady)
+//    {
+//        Step* step=getbestMove();
+//        MoveStone(step->fromID,step->toRow,step->toCol,step->toID);
+//        delete step;
+//    }
     if(!this->RedReady)
-     return;
+        return;
 
     Board::click(selectID,row,col);//如果人走，调用父类函数
 
     if(!this->RedReady)
     {
-        Step* step=getbestMove();
-        MoveStone(step->fromID,step->toRow,step->toCol,step->toID);
-        delete step;
+        /* 启动0.1秒定时器，在0.1秒后电脑再思考 */
+       // QTimer::singleShot(100, this, SLOT(computerMove()));
+        QTimer::singleShot(100,this,SLOT(computerMove()));
+
     }
 }
+void SingleGame::computerMove()
+{
+    Step* step=getbestMove();
+    MoveStone(step->fromID,step->toRow,step->toCol,step->toID);
+    delete step;
+    update();
+}
+
 void SingleGame::getAllPossibleMove(QVector<Step *> &steps)
 {
     int min=0;
@@ -59,25 +79,12 @@ Step* SingleGame::getbestMove()
     //2，试着走一下
     int maxScore=-100000;//保存最大的局面分
     Step* ret=NULL;
-//    for(QVector<Step*>::iterator it=steps.begin();it!=steps.end();++it)//使用迭代器遍历所有步数
-//    {
-//        Step* step=*it;
-//        fakeMove(step);//电脑试着走一下，不是真的走
-//        int score=getMinScore();//走一步，计算此时的局面分
-//        unfakeMove(step);//恢复到原来
-
-//        if(score>maxScore)//在最小值里面找出最好的局面分
-//        {
-//            maxScore=score;
-//            ret=step;
-//        }
-//    }
     while(steps.count())
     {
         Step* step=steps.back();
         steps.removeLast();
         fakeMove(step);//电脑试着走一下，不是真的走
-        int score=getMinScore();//走一步，计算此时的局面分
+        int score=getMinScore(_level-1, maxScore);//走一步，计算此时的局面分
         unfakeMove(step);//恢复到原来
 
         if(score>maxScore)//在最小值里面找出最好的局面分
@@ -95,41 +102,80 @@ Step* SingleGame::getbestMove()
     //4，取最好的结果的作为参考
 
 }
-int SingleGame::getMinScore()
+int SingleGame::getMinScore(int level, int curMaxScore)
 {
-       //1,看看有红棋有哪些步骤可以走
+    if(level == 0) return calcScore();
+
+    // 1.看看有那些步骤可以走
     QVector<Step*> steps;
-    getAllPossibleMove(steps);
+    getAllPossibleMove(steps);   // 是红旗的possiblemove
 
-    int minScore=100000;
-//    for(QVector<Step*>::iterator it=steps.begin();it!=steps.end();++it)//使用迭代器遍历所有步数
-//    {
-//        Step* step=*it;
-//        fakeMove(step);//电脑试着走一下，不是真的走
-//        int score=calcScore();//走一步，计算此时的局面分
-//        unfakeMove(step);//恢复到原来
-
-//        if(score<minScore)//找出最小的局面分
-//        {
-//            minScore=score;
-//        }
-//    }
+    int minScore = 100000;
     while(steps.count())
     {
-        Step* step=steps.back();
-        steps.removeLast();//销毁最后一个。释放内存
-        fakeMove(step);//电脑试着走一下，不是真的走
-        int score=calcScore();//走一步，计算此时的局面分
-        unfakeMove(step);//恢复到原来
+        Step* step = steps.back();
+        steps.removeLast();
 
-        if(score<minScore)//找出最小的局面分
+        fakeMove(step);
+        int score = getMaxScore(level-1, minScore);
+        unfakeMove(step);
+        delete step;
+
+        if(score <= curMaxScore)
         {
-            minScore=score;
+            while(steps.count())
+            {
+                Step* step = steps.back();
+                steps.removeLast();
+                delete step;
+            }
+            return score;
         }
-        delete step;//释放内存
+
+        if(score < minScore)
+        {
+            minScore = score;
+        }
+
     }
     return minScore;
+}
+int SingleGame::getMaxScore(int level, int curMinScore)
+{
+    if(level == 0) return calcScore();
 
+    // 1.看看有那些步骤可以走
+    QVector<Step*> steps;
+    getAllPossibleMove(steps);   // 是红旗的possiblemove
+
+    int maxScore = -100000;
+    while(steps.count())
+    {
+        Step* step = steps.back();
+        steps.removeLast();
+
+        fakeMove(step);
+        int score = getMinScore(level-1, maxScore);
+        unfakeMove(step);
+        delete step;
+
+        if(score >= curMinScore)
+        {
+            while(steps.count())
+            {
+                Step* step = steps.back();
+                steps.removeLast();
+                delete step;
+            }
+            return score;
+        }
+        if(score > maxScore)
+        {
+            maxScore = score;
+        }
+
+    }
+    return maxScore;
 }
 void SingleGame::fakeMove(Step *step)
 {
