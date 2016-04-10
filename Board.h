@@ -4,6 +4,11 @@
 #include <QWidget>
 #include "Stone.h"
 #include "Step.h"
+#include<QRgb>
+#include <QPushButton>
+#include<QSplitter>
+#include <QGroupBox>
+#include <QLabel>
 class Board : public QWidget
 {
     Q_OBJECT
@@ -19,6 +24,7 @@ public:
 
     QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
 
+   void setupBoardFacade();//设置棋盘外观
    void InitStoneSides();//初始化棋子
    void DrawBoard(QPainter &painter);//绘制棋盘
    void DrawStone(QPainter &painter,int i);//绘制棋子函数
@@ -55,9 +61,31 @@ public:
    void reliveStone(int id);//复活棋子
    bool isWin(int id);//判断是否胜利，胜利则结束游戏
    void restoreBoard();//还原棋盘到一开始的时候
+
+   void UndoStep();//悔棋
+   void UndoStep(Step*step);//悔棋
+   //定一些按钮
+   QPushButton* m_startbutton;//开始
+   QPushButton* m_requestbutton;//求和
+   QPushButton* m_surrenderbutton;//投降，认输
+   QPushButton* m_undobutton;//悔棋
+
+   QSplitter* m_splitterMain;//主分割器
+   QGroupBox* m_BlackGroupBox;//黑方对局信息分组框
+   QGroupBox* m_RedGroupBox;//红方对局信息分组框
+   QGroupBox* m_TimeGroupBox;//对局时间信息分组框
+   QLabel*    m_InfoLabel;//信息
+   QLabel*   m_BlackNameLabel;//黑方对局名称信息
+   QLabel*   m_BlackScoreLabel;//黑方对局积分信息
+   QLabel*   m_RedNameLabel;//红方对局名称信息
+   QLabel*   m_RedScoreLabel;//红方对局积分信息
+
+   QLabel* m_BlackTimeLabel;//时间
+   QLabel* m_RedTimeLabel;
 signals:
 
 public slots:
+   void slotUndoStep();
 };
 
 #endif // BOARD_H

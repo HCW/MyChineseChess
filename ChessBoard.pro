@@ -13,3 +13,6 @@ SOURCES += \
 
 
 QT += widgets gui
+
+RESOURCES += \
+    myres.qrc

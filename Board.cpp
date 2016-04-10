@@ -4,13 +4,139 @@
 #include <math.h>
 #include<QMessageBox>
 #include<QDebug>
+#include <QPixmap>
+#include <QPalette>
+#include<QHBoxLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include<QFont>
 Board::Board(QWidget *parent) : QWidget(parent)
 {
     this->setWindowTitle("中国象棋");
+    setupBoardFacade();//设置棋盘外观
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
     m_sides=true;//红方在下边
     InitStoneSides();//初始化棋子
+
+}
+void Board::setupBoardFacade()
+{
+    //设置背景图片
+    QPixmap pixmap=QPixmap(":/new/prefix1/res/chessbord.bmp").scaled(this->size());//加载一张图片，大小与窗口匹配
+    QPalette palette(this->palette());//定义一个调色板
+    palette.setBrush(QPalette::Background,QBrush(pixmap));
+    this->setPalette(palette);
+
+    //实例化按钮，并布局
+    m_startbutton=new QPushButton("开始",this);
+    m_requestbutton=new QPushButton("求和",this);
+    m_surrenderbutton=new QPushButton("认输",this);
+    m_undobutton=new QPushButton("悔棋",this);
+
+
+    //直接移动位置
+    int distance=60;
+   // m_startbutton->move(2*m_r*11,2*m_r*1);
+      m_startbutton->move(distance,440);
+      m_requestbutton->move(distance+80,440);
+      m_surrenderbutton->move(distance+160,440);
+      m_undobutton->move(distance+240,440);
+
+     //设置对局信息
+      m_BlackGroupBox=new QGroupBox("黑方",this);
+      m_BlackGroupBox->setFont(QFont("楷体"));
+      m_BlackNameLabel=new QLabel("昵称：电脑智能");
+      m_BlackScoreLabel=new QLabel("等级：3");
+      QVBoxLayout*vlay1=new QVBoxLayout();
+      vlay1->addWidget(m_BlackNameLabel);
+      vlay1->addWidget(m_BlackScoreLabel);
+      m_BlackGroupBox->setLayout(vlay1);
+      m_BlackGroupBox->move(400,30);
+     // m_BlackGroupBox->resize(130,90);
+
+      QVBoxLayout*vlay2=new QVBoxLayout();
+      m_RedNameLabel=new QLabel("昵称：朽DF465");
+      m_RedScoreLabel=new QLabel("积分：1820");
+      vlay2->addWidget(m_RedNameLabel);
+      vlay2->addWidget(m_RedScoreLabel);
+      m_RedGroupBox=new QGroupBox("红方",this);
+       m_RedGroupBox->setFont(QFont("华文新魏"));
+      m_RedGroupBox->setLayout(vlay2);
+      m_RedGroupBox->move(400,330);
+    // m_RedGroupBox->resize(130,90);
+
+      m_BlackTimeLabel=new QLabel("黑方局时：00:00:00");
+      m_RedTimeLabel=new QLabel("红方局时：00:00:00");
+      QVBoxLayout*vlay3=new QVBoxLayout();
+      vlay3->addWidget( m_BlackTimeLabel);
+      vlay3->addWidget(m_RedTimeLabel);
+     m_TimeGroupBox=new QGroupBox("对局时间",this);
+      m_TimeGroupBox->setFont(QFont("华文新魏"));
+     m_TimeGroupBox->setLayout(vlay3);
+     m_TimeGroupBox->move(380,180);
+
+
+
+//#436EEE #8B5A2B
+      QString qss0="QPushButton {\
+              background-color: #473C8B;\
+              border-style: outset;\
+              border-width: 2px;\
+              border-radius: 5px;\
+              border-color: #8B7355;\
+              font: bold 14px;\
+              min-width:2em;\
+              color:white;\
+              font-family:华文新魏;\
+              padding: 5px;\
+          }\
+          QPushButton:pressed {\
+              background-color: #1E90FF;\
+              border-style: inset;\
+          }";
+       m_startbutton->setStyleSheet(qss0);
+       m_requestbutton->setStyleSheet(qss0);
+       m_surrenderbutton->setStyleSheet(qss0);
+       m_undobutton->setStyleSheet(qss0);
+
+
+       QString qss1="QGroupBox {\
+               border: 2px solid #0000EE;\
+               border-radius: 5px;\
+               margin-top: 1ex; \
+               font-family:仿宋;\
+               font:blod 14px;\
+           }\
+           QGroupBox::title {\
+               subcontrol-origin: margin;\
+               subcontrol-position: top center;\
+               padding: 0 3px;\
+           }";
+
+        QString qss2="QLabel{\
+                padding: 2px;\
+                font-family:华文新魏;\
+                color:white;\
+                font:bold 16px;\
+            }";
+        m_BlackGroupBox->setStyleSheet(qss1);
+        m_RedGroupBox->setStyleSheet(qss1);
+        m_TimeGroupBox->setStyleSheet(qss1);
+
+        m_BlackNameLabel->setStyleSheet(qss2);
+        m_BlackScoreLabel->setStyleSheet(qss2);
+        m_RedNameLabel->setStyleSheet(qss2);
+        m_RedScoreLabel->setStyleSheet(qss2);
+
+        m_BlackTimeLabel->setStyleSheet(qss2);
+        m_RedTimeLabel->setStyleSheet(qss2);
+
+//-----------------------------------------------------------------
+      connect(m_undobutton,SIGNAL(clicked()),this,SLOT(slotUndoStep()));//连接悔棋的槽函数
+    //qDebug()<<"Size:"<<this->size();
+      this->resize(600,480);
 
 }
 void Board::InitStoneSides()
@@ -113,7 +239,9 @@ void Board::DrawStone(QPainter &painter,int i)
        QPoint stoCenter=center(stone[i].m_row,stone[i].m_col);
        QRect rt=QRect(stoCenter.rx()-m_r,stoCenter.ry()-m_r,m_r*2,2*m_r);//创建一个矩形来摆放棋子的名称
        painter.setFont(QFont("system",24));
-       painter.setBrush(QBrush(QColor("yellow")));
+      //painter.setBrush(QBrush(QColor("brown")));
+     //  painter.setBrush(QColor(255,204,153));//浅棕色
+       painter.setBrush(QColor(255,204,155));
          if(stone[i].m_red)
          {
             if(i==m_seleceID)//改变选中的棋子的颜色
@@ -124,8 +252,9 @@ void Board::DrawStone(QPainter &painter,int i)
             }
              else
             {
-                painter.setPen(QColor("red"));
+
                 painter.drawEllipse(stoCenter,m_r,m_r);//画圆
+                painter.setPen(QColor("red"));
                 painter.drawText(rt,stone[i].getType(),QTextOption(Qt::AlignCenter));
             }
          }
@@ -242,6 +371,24 @@ void Board::reliveStone(int id)
     if(id==-1) return;
 
     stone[id].m_dead=false;
+}
+void Board::slotUndoStep()
+{
+    UndoStep();
+}
+void Board::UndoStep()
+{
+    if(m_steps.size()==0) return;
+    Step*step=m_steps.last();//取数组最后一个
+    m_steps.removeLast();//删除上一个
+    UndoStep(step);
+    update();
+    delete step;
+}
+void Board::UndoStep(Step*step)
+{
+    reliveStone(step->toID);//复活被杀死的棋子
+    MoveStone(step->fromID,step->fromRow,step->fromCol);//移动到上一步
 }
 void Board::killStone(int killid)
 {
