@@ -3,27 +3,17 @@
 void SingleGame::click(int selectID, int row, int col)
 {
     //人机对弈，电脑执黑
-//    if(!this->RedReady)
-//     return;
-
-//    Board::click(selectID,row,col);//如果人走，调用父类函数
-
-//    if(!this->RedReady)
-//    {
-//        Step* step=getbestMove();
-//        MoveStone(step->fromID,step->toRow,step->toCol,step->toID);
-//        delete step;
-//    }
     if(!this->RedReady)
         return;
 
     Board::click(selectID,row,col);//如果人走，调用父类函数
-
+    emit sigRedStop();//红方走完，发射红方时间停止信号
+    emit sigBlackStart();//发射黑方时间开始信号
     if(!this->RedReady)
     {
         /* 启动0.1秒定时器，在0.1秒后电脑再思考 */
        // QTimer::singleShot(100, this, SLOT(computerMove()));
-        QTimer::singleShot(100,this,SLOT(computerMove()));
+        QTimer::singleShot(5000,this,SLOT(computerMove()));
 
     }
 }
@@ -33,6 +23,8 @@ void SingleGame::computerMove()
     MoveStone(step->fromID,step->toRow,step->toCol,step->toID);
     delete step;
     update();
+    emit sigRedStart();//同理
+    emit sigBlackStop();
 }
 
 void SingleGame::getAllPossibleMove(QVector<Step *> &steps)

@@ -4,11 +4,12 @@
 #include <QWidget>
 #include "Stone.h"
 #include "Step.h"
-#include<QRgb>
+#include <QRgb>
 #include <QPushButton>
-#include<QSplitter>
+#include <QSplitter>
 #include <QGroupBox>
 #include <QLabel>
+#include <QTimer>
 class Board : public QWidget
 {
     Q_OBJECT
@@ -24,6 +25,7 @@ public:
 
     QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
 
+   void InitGame();//初始化所有参数4
    void setupBoardFacade();//设置棋盘外观
    void InitStoneSides();//初始化棋子
    void DrawBoard(QPainter &painter);//绘制棋盘
@@ -80,12 +82,36 @@ public:
    QLabel*   m_RedNameLabel;//红方对局名称信息
    QLabel*   m_RedScoreLabel;//红方对局积分信息
 
+   //对局时间设置
    QLabel* m_BlackTimeLabel;//时间
    QLabel* m_RedTimeLabel;
-signals:
 
+   QTimer*m_BlackTimer;//黑方定时器
+   QTimer*m_RedTimer;//红方定时器
+   int m_BlackTime;//黑方局时
+   int m_RedTime;//红方局时
+
+   void InitTimeSetup();//初始化时间设置
+
+   //定义一个开始下棋标志，该标志不置1，不能下棋
+   bool m_StartGameFlag;
+
+
+signals:
+   void sigRedStart();
+   void sigRedStop();
+   void sigBlackStart();
+   void sigBlackStop();
 public slots:
-   void slotUndoStep();
+   void slotUndoStep();//悔棋
+   void slotBlackTime();//黑棋时间处理
+   void slotRedTime();//红棋时间处理
+   void slotBlackStart();//黑棋时间开始走
+   void slotBlackStop();//黑方停止计时
+   void slotRedStart();//红棋时间开始走
+   void slotRedStop();//红棋停止计时
+
+   void slotStartButtonClick();//开始按钮
 };
 
 #endif // BOARD_H

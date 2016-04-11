@@ -15,11 +15,90 @@ Board::Board(QWidget *parent) : QWidget(parent)
 {
     this->setWindowTitle("中国象棋");
     setupBoardFacade();//设置棋盘外观
+    InitTimeSetup();//初始化时间设置
+    InitGame();//初始化参数
+    InitStoneSides();//初始化棋子
+
+}
+void Board::InitGame()
+{
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
     m_sides=true;//红方在下边
-    InitStoneSides();//初始化棋子
+    m_StartGameFlag=false;//默认未开始下棋
 
+    connect(m_startbutton,SIGNAL(clicked()),this,SLOT(slotStartButtonClick()));
+    connect(this,SIGNAL(sigRedStart()),this,SLOT(slotRedStart()));
+    connect(this,SIGNAL(sigRedStop()),this,SLOT(slotRedStop()));
+    connect(this,SIGNAL(sigBlackStart()),this,SLOT(slotBlackStart()));
+    connect(this,SIGNAL(sigBlackStop()),this,SLOT(slotBlackStop()));
+}
+void Board::InitTimeSetup()
+{
+    m_BlackTimer=new QTimer(this);
+    m_RedTimer=new QTimer(this);
+    m_BlackTimer->setInterval(1000);
+    m_RedTimer->setInterval(1000);
+   // m_BlackTimer->start();
+   // m_RedTimer->start();
+    //默认局时10分钟
+    m_BlackTime=600;
+    m_RedTime=600;
+
+    connect(m_BlackTimer,SIGNAL(timeout()),this,SLOT(slotBlackTime()));
+    connect(m_RedTimer,SIGNAL(timeout()),this,SLOT(slotRedTime()));
+}
+void Board::slotBlackTime()
+{
+    int min;
+    int sec;
+    min=m_BlackTime/60;
+    sec=m_BlackTime%60;
+    if(--m_BlackTime==0)
+    {
+        //保留
+    }
+    char TIME[20];
+    sprintf(TIME,"黑方局时：%d:%d",min,sec);
+    QString str=TIME;
+    m_BlackTimeLabel->setText(str);
+}
+void Board::slotRedTime()
+{
+    int min;
+    int sec;
+    min=m_RedTime/60;
+    sec=m_RedTime%60;
+    if(--m_RedTime==0)
+    {
+        //保留
+    }
+    char TIME[20];
+    sprintf(TIME,"黑方局时：%d:%d",min,sec);
+    QString str=TIME;
+    m_RedTimeLabel->setText(str);
+}
+void Board::slotStartButtonClick()
+{
+    m_StartGameFlag=true;//开始游戏
+    m_startbutton->setEnabled(false);//开始按钮设置不可再点击
+    emit sigRedStart();//发射红方开始信号
+}
+void Board::slotBlackStart()
+{
+    m_BlackTimer->start();
+}
+void Board::slotBlackStop()
+{
+    m_BlackTimer->stop();
+}
+void Board::slotRedStart()
+{
+     m_RedTimer->start();
+}
+void Board::slotRedStop()
+{
+     m_RedTimer->stop();
 }
 void Board::setupBoardFacade()
 {
@@ -92,10 +171,17 @@ void Board::setupBoardFacade()
               font-family:华文新魏;\
               padding: 5px;\
           }\
+          QPushButton:hover{\
+          background-color: rgb(0, 150, 0);\
+                          }\
           QPushButton:pressed {\
               background-color: #1E90FF;\
               border-style: inset;\
-          }";
+          }\
+          QPushButton:!enabled{\
+                            background-color: rgb(100, 100, 100);\
+                            border-style: inset;\
+                            }";
        m_startbutton->setStyleSheet(qss0);
        m_requestbutton->setStyleSheet(qss0);
        m_surrenderbutton->setStyleSheet(qss0);
@@ -299,6 +385,7 @@ bool Board::getRowCol(QPoint pt, int &row, int &col)
 }
 void Board::mouseReleaseEvent(QMouseEvent *ev)
 {
+    if(!m_StartGameFlag) return;//如果未点击开始游戏，则点击无效
     QPoint pt=ev->pos();//获得点击的坐标
     click(pt);
 }

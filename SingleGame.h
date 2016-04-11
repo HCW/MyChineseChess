@@ -9,7 +9,7 @@ class SingleGame:public Board
 public:
     SingleGame()
     {
-        _level=3;
+        _level=4;
     }
     virtual void click(int selectID,int row,int col);//继承Board，重写click函数
 
