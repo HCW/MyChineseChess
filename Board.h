@@ -10,6 +10,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QTimer>
+#include "CalScoreWidget.h"
 class Board : public QWidget
 {
     Q_OBJECT
@@ -17,13 +18,13 @@ public:
     explicit Board(QWidget *parent = 0);
 
     //定义32颗棋子
-    Stone stone[32];
-    int m_r;//定义棋子的半径
-    int m_seleceID;//保存被选中棋子的ID
-    bool RedReady;//轮流走棋标志
-    bool m_sides;//红方棋子在棋盘下边还是上边，如果等于true则在下边，false则在上边
+   Stone stone[32];
+   int m_r;//定义棋子的半径
+   int m_seleceID;//保存被选中棋子的ID
+   bool RedReady;//轮流走棋标志
+   bool m_sides;//红方棋子在棋盘下边还是上边，如果等于true则在下边，false则在上边
 
-    QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
+   QVector<Step*> m_steps;//定义一个动态数组来存储走的步数
 
    void InitGame();//初始化所有参数4
    void setupBoardFacade();//设置棋盘外观
@@ -96,6 +97,8 @@ public:
    //定义一个开始下棋标志，该标志不置1，不能下棋
    bool m_StartGameFlag;
 
+   //定义一个对局结果窗体
+   CalScoreWidget* _ResultWidget;
 
 signals:
    void sigRedStart();
@@ -112,6 +115,7 @@ public slots:
    void slotRedStop();//红棋停止计时
 
    void slotStartButtonClick();//开始按钮
+   void slotRestore();//重新初始化
 };
 
 #endif // BOARD_H

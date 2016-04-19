@@ -1,4 +1,4 @@
- #include "Board.h"
+#include "Board.h"
 #include <QPainter>
 #include<QMouseEvent>
 #include <math.h>
@@ -22,6 +22,7 @@ Board::Board(QWidget *parent) : QWidget(parent)
 }
 void Board::InitGame()
 {
+    _ResultWidget=new CalScoreWidget;//初始化对局窗体
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
     m_sides=true;//红方在下边
@@ -32,6 +33,9 @@ void Board::InitGame()
     connect(this,SIGNAL(sigRedStop()),this,SLOT(slotRedStop()));
     connect(this,SIGNAL(sigBlackStart()),this,SLOT(slotBlackStart()));
     connect(this,SIGNAL(sigBlackStop()),this,SLOT(slotBlackStop()));
+
+    connect(_ResultWidget,SIGNAL(sigAgainGame()),this,SLOT(slotRestore()));
+
 }
 void Board::InitTimeSetup()
 {
@@ -74,13 +78,14 @@ void Board::slotRedTime()
         //保留
     }
     char TIME[20];
-    sprintf(TIME,"黑方局时：%d:%d",min,sec);
+    sprintf(TIME,"红方局时：%d:%d",min,sec);
     QString str=TIME;
     m_RedTimeLabel->setText(str);
 }
 void Board::slotStartButtonClick()
 {
     m_StartGameFlag=true;//开始游戏
+    update();
     m_startbutton->setEnabled(false);//开始按钮设置不可再点击
     emit sigRedStart();//发射红方开始信号
 }
@@ -267,42 +272,64 @@ void Board::paintEvent(QPaintEvent *)
     //绘制棋盘
     DrawBoard(painter);
      //绘制棋子
+    if(m_StartGameFlag){
      for(int j=0;j<32;++j)
-         {
+     {
             DrawStone(painter,j);
-           // if(!isWin(j))//判断胜负
-               // break;
-                isWin(j);
-         }
-
+            isWin(j);
+     }
+    }
 }
 bool Board::isWin(int id)
 {
-    static bool statusflag=true;//提示框标志
-    QMessageBox::StandardButton bt;
+   static bool statusflag=true;//提示框标志
+   //QMessageBox::StandardButton bt;
    if(statusflag)
    {
         if(stone[id].m_type==Stone::JIANG)
         {
             if(stone[id].m_dead)
-                bt=QMessageBox::question(this,"胜负情况","红方胜，是否再来一局？");
+            {
+                _ResultWidget->InitInfo("朽","赢",1800,"电脑","输",10000);
+                _ResultWidget->show();
+                m_StartGameFlag=false;
+
+            }
         }
         if(stone[id].m_type==Stone::SHUAI)
         {
             if(stone[id].m_dead)
-                 bt=QMessageBox::question(this,"胜负情况","黑方胜，是否再来一局？");
+            {
+               _ResultWidget->InitInfo("朽","输",1800,"电脑","赢",10000);
+               _ResultWidget->show();
+               m_StartGameFlag=false;
+            }
         }
-    }
-    if(bt==QMessageBox::Yes)
-    {
-        restoreBoard();//还原棋盘，重来一局
-    }
-    else if(bt==QMessageBox::No)
-    {
-        m_seleceID=-100;//暂时这样先，还不完善
-        statusflag=false;
-    }
+   }
+//    if(bt==QMessageBox::Yes)
+//    {
+//        restoreBoard();//还原棋盘，重来一局
+//    }
+//    else if(bt==QMessageBox::No)
+//    {
+//        m_seleceID=-100;//暂时这样先，还不完善
+//        statusflag=false;
+//    }
+
     return true;
+}
+void Board::slotRestore()
+{
+    restoreBoard();
+     m_startbutton->setEnabled(true);//开始按钮设置可再点击
+    _ResultWidget->close();
+    slotRedStop();//红棋停止计时
+    slotBlackStop();//黑方停止计时
+    slotBlackTime();//黑棋时间处理
+    slotRedTime();//红棋时间处理
+    m_BlackTime=600;
+    m_RedTime=600;
+    update();
 }
 void Board::restoreBoard()
 {
