@@ -28,7 +28,7 @@ public:
 
    void InitGame();//初始化所有参数4
    void setupBoardFacade();//设置棋盘外观
-   void InitStoneSides();//初始化棋子
+   void InitStoneSides(bool sides);//初始化棋子
    void DrawBoard(QPainter &painter);//绘制棋盘
    void DrawStone(QPainter &painter,int i);//绘制棋子函数
    QPoint center(int row,int col);//计算棋子的中心点，即坐标
@@ -45,6 +45,8 @@ public:
    bool canMovePao(int moveID,int row,int col,int killID);
    bool canMoveBingZu(int moveID,int row,int col,int killID);
    bool canMoveXiang(int moveID,int row,int col,int killID);
+   bool isBottomSide(int id);//判断该棋子在上边还是下边
+   int relation(int row1, int col1, int row, int col);//返回一个绝对值，用来限制走棋规则
 
    bool isPreventXiang(int moveID,int row,int col);//判断“象”是否被阻挡
    bool isPreventMa(int moveID,int row,int col);//判断“马”是否被阻挡
@@ -114,7 +116,7 @@ public slots:
    void slotRedStart();//红棋时间开始走
    void slotRedStop();//红棋停止计时
 
-   void slotStartButtonClick();//开始按钮
+   virtual void slotStartButtonClick();//开始按钮
    void slotRestore();//重新初始化
 };
 

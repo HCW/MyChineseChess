@@ -31,6 +31,13 @@ void Stone::StoneInit(int ID)
     {3,8,ZU}
     };
     struct pos m_Bpos2[]={
+    {6,0,ZU},
+    {6,2,ZU},
+    {6,4,ZU},
+    {6,6,ZU},
+    {6,8,ZU},
+    {7,1,PAO},
+    {7,7,PAO},
     {9,0,JU},
     {9,1,MA},
     {9,2,BXIANG},
@@ -40,15 +47,15 @@ void Stone::StoneInit(int ID)
     {9,6,BXIANG},
     {9,7,MA},
     {9,8,JU},
-    {7,1,PAO},
-    {7,7,PAO},
-    {6,0,ZU},
-    {6,2,ZU},
-    {6,4,ZU},
-    {6,6,ZU},
-    {6,8,ZU}
     };
     struct pos m_Rpos[]={
+    {6,0,BING},
+    {6,2,BING},
+    {6,4,BING},
+    {6,6,BING},
+    {6,8,BING},
+    {7,1,PAO},
+    {7,7,PAO},
     {9,0,JU},
     {9,1,MA},
     {9,2,RXIANG},
@@ -58,13 +65,6 @@ void Stone::StoneInit(int ID)
     {9,6,RXIANG},
     {9,7,MA},
     {9,8,JU},
-    {7,1,PAO},
-    {7,7,PAO},
-    {6,0,BING},
-    {6,2,BING},
-    {6,4,BING},
-    {6,6,BING},
-    {6,8,BING}
     };
     struct pos m_Rpos2[]={
     {0,0,JU},
@@ -86,14 +86,14 @@ void Stone::StoneInit(int ID)
     };
     if(this->m_red)//红方
     {
-        if(ID>=16)
+        if(ID>=16)// 红方在下面
         {
             ID=ID-16;
             this->m_row=m_Rpos[ID].row;
             this->m_col=m_Rpos[ID].col;
             this->m_type=m_Rpos[ID].type;
         }
-        else
+        else //红方在上面
         {
             this->m_row=m_Rpos2[ID].row;
             this->m_col=m_Rpos2[ID].col;
@@ -102,14 +102,14 @@ void Stone::StoneInit(int ID)
     }
     else//黑方
     {
-        if(ID<16)
+        if(ID<16)//红方在下面
         {
 
             this->m_row=m_Bpos[ID].row;
             this->m_col=m_Bpos[ID].col;
             this->m_type=m_Bpos[ID].type;
         }
-        else
+        else//红方在上面
         {
              ID=ID-16;
             this->m_row=m_Bpos2[ID].row;

@@ -3,7 +3,8 @@ HEADERS += \
     Stone.h \
     Step.h \
     SingleGame.h \
-    CalScoreWidget.h
+    CalScoreWidget.h \
+    NetGame.h
 
 SOURCES += \
     Board.cpp \
@@ -11,10 +12,11 @@ SOURCES += \
     Stone.cpp \
     Step.cpp \
     SingleGame.cpp \
-    CalScoreWidget.cpp
+    CalScoreWidget.cpp \
+    NetGame.cpp
 
 
-QT += widgets gui
+QT += widgets gui network
 
 RESOURCES += \
     myres.qrc

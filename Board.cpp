@@ -11,13 +11,18 @@
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include<QFont>
+
+#define GetRowCol(__row, __col, __id) \
+    int __row = stone[__id].m_row;\
+    int __col = stone[__id].m_col
+
 Board::Board(QWidget *parent) : QWidget(parent)
 {
     this->setWindowTitle("中国象棋");
     setupBoardFacade();//设置棋盘外观
     InitTimeSetup();//初始化时间设置
     InitGame();//初始化参数
-    InitStoneSides();//初始化棋子
+    InitStoneSides(true);//初始化棋子
 
 }
 void Board::InitGame()
@@ -227,11 +232,12 @@ void Board::setupBoardFacade()
 //-----------------------------------------------------------------
       connect(m_undobutton,SIGNAL(clicked()),this,SLOT(slotUndoStep()));//连接悔棋的槽函数
     //qDebug()<<"Size:"<<this->size();
-      this->resize(600,480);
+      this->resize(600,480);//设置棋盘大小
 
 }
-void Board::InitStoneSides()
+void Board:: InitStoneSides(bool sides)
 {
+    m_sides=sides;
     for(int i=0;i<32;++i)
     {
         if(m_sides)
@@ -336,7 +342,7 @@ void Board::restoreBoard()
     m_seleceID=-1;//初始化，等于-1表示棋子还未被选中
     RedReady=true;//红方先行
     m_sides=true;//红方在下边
-    InitStoneSides();//初始化棋子
+    InitStoneSides(true);//初始化棋子
 }
 QPoint Board::center(int row, int col)
 {
@@ -591,47 +597,75 @@ bool Board::canMove(int moveID, int row, int col, int killID)
     }
     return true;
 }
+bool Board::isBottomSide(int id)
+{
+    //return _bSide == _s[id._red;
+    return m_sides == stone[id].m_red;
+}
+int Board::relation(int row1, int col1, int row, int col)
+{
+    return qAbs(row1-row)*10+qAbs(col1-col);
+}
 bool Board::canMoveBingZu(int moveID, int row, int col, int )
 {
     //兵、卒的走棋规则，也是只能走直线，而且只能走一格，只能前进，没过河之前只能前进，不能左右和后退，
     //过河之后可以左右，不可后退
     //1，不是直线，错误走法
-    if(stone[moveID].m_row!=row&&stone[moveID].m_col!=col)
-        return false;
-    //2,只能前进
-    if(stone[moveID].m_red)//兵
-    {
-        //首先判断过没过河，兵不在，5,6行说明过了河
-        if(stone[moveID].m_row!=5&&stone[moveID].m_row!=6)//过了河
-        {
-            //其次是不能后退,且只能移动一个位置
-             if(stone[moveID].m_row-row!=1&&abs(stone[moveID].m_col-col)!=1)
-                 return false;
+//    if(stone[moveID].m_row!=row&&stone[moveID].m_col!=col)
+//        return false;
+//    //2,只能前进
+//    if(stone[moveID].m_red)//兵
+//    {
+//        //首先判断过没过河，兵不在，5,6行说明过了河
+//        if(stone[moveID].m_row!=5&&stone[moveID].m_row!=6)//过了河
+//        {
+//            //其次是不能后退,且只能移动一个位置
+//             if(stone[moveID].m_row-row!=1&&abs(stone[moveID].m_col-col)!=1)
+//                 return false;
 
-        }
-        else//没过河
-        {
-            //其次是不能后退,且只能移动一个位置,不能左右移动
-             if(stone[moveID].m_row-row!=1||stone[moveID].m_col-col!=0)
-                 return false;
-        }
+//        }
+//        else//没过河
+//        {
+//            //其次是不能后退,且只能移动一个位置,不能左右移动
+//             if(stone[moveID].m_row-row!=1||stone[moveID].m_col-col!=0)
+//                 return false;
+//        }
+//    }
+//    else//卒
+//    {
+//        //首先判断过没过河，卒不在，3,4行说明过了呵
+//        if(stone[moveID].m_row!=3&&stone[moveID].m_row!=4)//过了河
+//        {
+//            //其次是不能后退,且只能移动一个位置
+//             if(stone[moveID].m_row-row!=-1&&abs(stone[moveID].m_col-col)!=1)
+//                 return false;
+
+//        }
+//        else//没过河
+//        {
+//            //其次是不能后退,且只能移动一个位置,不能左右移动
+//             if(stone[moveID].m_row-row!=-1||stone[moveID].m_col-col!=0)
+//                 return false;
+//        }
+//    }
+
+//    return true;
+  //  int row1;
+   // int col1;
+    //getRowCol(row1, col1, moveID);
+   GetRowCol(row1, col1, moveID);
+    int r = relation(row1, col1, row, col);
+    if(r != 1 && r != 10) return false;
+
+    if(isBottomSide(moveID))
+    {
+        if(row > row1) return false;
+        if(row1 >= 5 && row == row1) return false;
     }
-    else//卒
+    else
     {
-        //首先判断过没过河，卒不在，3,4行说明过了呵
-        if(stone[moveID].m_row!=3&&stone[moveID].m_row!=4)//过了河
-        {
-            //其次是不能后退,且只能移动一个位置
-             if(stone[moveID].m_row-row!=-1&&abs(stone[moveID].m_col-col)!=1)
-                 return false;
-
-        }
-        else//没过河
-        {
-            //其次是不能后退,且只能移动一个位置,不能左右移动
-             if(stone[moveID].m_row-row!=-1||stone[moveID].m_col-col!=0)
-                 return false;
-        }
+        if(row < row1) return false;
+        if(row1 <= 4 && row == row1) return false;
     }
 
     return true;
@@ -857,7 +891,7 @@ bool Board::canMovePao(int moveID, int row, int col, int )
           }
     }
 }
-bool Board::canMoveJiang(int moveID, int row, int col, int)
+bool Board::canMoveJiang(int moveID, int row, int col, int killid)
 {
     /*
      将或者帅的移动，规则：
@@ -866,35 +900,52 @@ bool Board::canMoveJiang(int moveID, int row, int col, int)
      3、当将和帅面对面时可以直接吃掉（这个后面再实现）
      */
 
-    //1、判断是否在九宫格内
-    if(stone[moveID].m_type==Stone::JIANG)
-    {
-        if(row>2||(col<3)||col>5)
-            return false;
-        //  2、每次只能走一格，而且只能直线行走
-        int dx=stone[moveID].m_row-row;
-        int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是1个等于1一个等于0才是合法走法，不能对角线走
-        int d=abs(dx)+abs(dy);
-        if(d==1)
-            return true;
-        else
-            return false;
+//    //1、判断是否在九宫格内
+//    if(stone[moveID].m_type==Stone::JIANG)
+//    {
+//        if(row>2||(col<3)||col>5)
+//            return false;
+//        //  2、每次只能走一格，而且只能直线行走
+//        int dx=stone[moveID].m_row-row;
+//        int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是1个等于1一个等于0才是合法走法，不能对角线走
+//        int d=abs(dx)+abs(dy);
+//        if(d==1)
+//            return true;
+//        else
+//            return false;
 
-    }
-    if(stone[moveID].m_type==Stone::SHUAI)//同理
-    {
-        if(row<7||(col<3)||col>5)
-            return false;
-        //  2、每次只能走一格，而且只能直线行走
-        int dx=stone[moveID].m_row-row;
-        int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是1个等于1一个等于0才是合法走法，不能对角线走
-        int d=abs(dx)+abs(dy);
-        if(d==1)
-            return true;
-        else
-            return false;
-    }
+//    }
+//    if(stone[moveID].m_type==Stone::SHUAI)//同理
+//    {
+//        if(row<7||(col<3)||col>5)
+//            return false;
+//        //  2、每次只能走一格，而且只能直线行走
+//        int dx=stone[moveID].m_row-row;
+//        int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是1个等于1一个等于0才是合法走法，不能对角线走
+//        int d=abs(dx)+abs(dy);
+//        if(d==1)
+//            return true;
+//        else
+//            return false;
+//    }
 
+//    return true;
+//    if(killid != -1 && stone[killid].m_type == Stone::JIANG)
+//        return canMoveChe(moveID, killid, row, col);
+
+    GetRowCol(row1, col1, moveID);
+    int r = relation(row1, col1, row, col);
+    if(r != 1 && r != 10) return false;
+
+    if(col < 3 || col > 5) return false;
+    if(isBottomSide(moveID))
+    {
+        if(row < 7) return false;
+    }
+    else
+    {
+        if(row > 2) return false;
+    }
     return true;
 }
  bool Board::canMoveShi(int moveID,int row,int col,int )
@@ -908,16 +959,16 @@ bool Board::canMoveJiang(int moveID, int row, int col, int)
      //1、判断是否在九宫格内，先判断是不是红方
      if(stone[moveID].m_type==Stone::SHI)
      {
-         if(stone[moveID].m_red)//是红方
-         {
-             if(row<7||(col<3)||col>5)
-                 return false;
-         }
-         else//黑方
-         {
-             if(row>2||(col<3)||col>5)
-                 return false;
-         }
+//         if(stone[moveID].m_red)//是红方
+//         {
+//             if(row<7||(col<3)||col>5)
+//                 return false;
+//         }
+//         else//黑方
+//         {
+//             if(row>2||(col<3)||col>5)
+//                 return false;
+//         }
          //  2、每次只能走一格，而且只能对角线行走
          int dx=stone[moveID].m_row-row;
          int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是都等于1才是合法走法，不能直线走
@@ -971,8 +1022,8 @@ bool Board::canMoveJiang(int moveID, int row, int col, int)
          return false;
      if(stone[moveID].m_red)//红方“相”
      {
-         if(!(row==5||row==7||row==9))
-             return false;
+//         if(!(row==5||row==7||row==9))
+//             return false;
          int dx=stone[moveID].m_row-row;
          int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是都等于1才是合法走法，不能直线走
          int d=abs(dx)*10+abs(dy);//两个数其中一个乘以10再相加，如果是对角线则是：10*2+2=22；其他情况都得不到22
@@ -987,9 +1038,9 @@ bool Board::canMoveJiang(int moveID, int row, int col, int)
              return false;
      }
      else// 黑方“象”
-     {
+     {/*
          if(!(row==0||row==2||row==4))
-             return false;
+             return false;*/
          int dx=stone[moveID].m_row-row;
          int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是都等于1才是合法走法，不能直线走
          int d=abs(dx)*10+abs(dy);//两个数其中一个乘以10再相加，如果是对角线则是：10*2+2=22；其他情况都得不到22
@@ -1203,6 +1254,7 @@ void Board::DrawBoard(QPainter &painter)
 {
     //绘制棋盘
     int d=40;//棋子直径，用来衡量棋盘的大小
+    //int d = (height()/20)*2;
     m_r=d/2;//保存半径
     for(int i=1;i<=10;++i)//绘制10行
     {
