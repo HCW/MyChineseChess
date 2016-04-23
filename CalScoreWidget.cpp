@@ -13,6 +13,9 @@ CalScoreWidget::CalScoreWidget(QWidget *parent) : QWidget(parent)
     InitForm();
 
     connect(_AgainGameButton,SIGNAL(clicked()),this,SLOT(slotAgainGame()));
+    connect(_BackMainFormButton,SIGNAL(clicked()),this,SLOT(slotBackForm()));
+
+     this->setWindowIcon(QIcon(":/new/prefix1/res/logo.png"));
 
 }
 void CalScoreWidget::InitInfo(QString rp, QString rsta, int rsc, QString bp, QString bsta, int bsc)
@@ -29,6 +32,8 @@ void CalScoreWidget::InitInfo(QString rp, QString rsta, int rsc, QString bp, QSt
      memset(str,0,10);
     sprintf(str,"%d",bsc);
    _BlackScore=str;//积分
+
+    this->setWindowFlags(Qt::WindowCloseButtonHint|Qt::WindowMinimizeButtonHint);
 }
 void CalScoreWidget::InitForm()
 {
@@ -142,4 +147,9 @@ void CalScoreWidget::paintEvent(QPaintEvent* e)
 void CalScoreWidget::slotAgainGame()
 {
     emit sigAgainGame();
+}
+void CalScoreWidget::slotBackForm()
+{
+    emit sigBackForm();//发射信号
+    this->close();
 }

@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/new/prefix1">
         <file>res/chessbord.bmp</file>
+        <file>res/ch.jpg</file>
+        <file>res/ch2.jpg</file>
+        <file>res/ch3.jpg</file>
+        <file>res/ch4.jpg</file>
+        <file>res/logo.png</file>
     </qresource>
 </RCC>

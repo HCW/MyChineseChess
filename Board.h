@@ -107,6 +107,8 @@ signals:
    void sigRedStop();
    void sigBlackStart();
    void sigBlackStop();
+
+   void sigHandleBackForm();//返回主界面信号
 public slots:
    void slotUndoStep();//悔棋
    void slotBlackTime();//黑棋时间处理
@@ -118,6 +120,10 @@ public slots:
 
    virtual void slotStartButtonClick();//开始按钮
    void slotRestore();//重新初始化
+
+   void slotSurrender();//认输槽函数
+
+   void slotHandleBackForm();//处理返回主界面信号
 };
 
 #endif // BOARD_H

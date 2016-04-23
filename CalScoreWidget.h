@@ -31,8 +31,10 @@ public:
     QStandardItemModel*_model;
 signals:
     void sigAgainGame();
+    void sigBackForm();//返回主界面信号
 public slots:
     void slotAgainGame();
+    void slotBackForm();
 };
 
 #endif // CALSCOREWIDGET_H

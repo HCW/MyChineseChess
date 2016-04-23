@@ -4,7 +4,9 @@ HEADERS += \
     Step.h \
     SingleGame.h \
     CalScoreWidget.h \
-    NetGame.h
+    NetGame.h \
+    ChessDlg.h \
+    MulitiGame.h
 
 SOURCES += \
     Board.cpp \
@@ -13,7 +15,9 @@ SOURCES += \
     Step.cpp \
     SingleGame.cpp \
     CalScoreWidget.cpp \
-    NetGame.cpp
+    NetGame.cpp \
+    ChessDlg.cpp \
+    MulitiGame.cpp
 
 
 QT += widgets gui network

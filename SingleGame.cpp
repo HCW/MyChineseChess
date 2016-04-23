@@ -2,6 +2,10 @@
 #include <QTimer>
 void SingleGame::click(int selectID, int row, int col)
 {
+    //初始化按钮
+    m_requestbutton->setEnabled(false);//求和按钮不可用
+
+
     //人机对弈，电脑执黑
     if(!this->RedReady)
         return;

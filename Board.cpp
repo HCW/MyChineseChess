@@ -24,6 +24,9 @@ Board::Board(QWidget *parent) : QWidget(parent)
     InitGame();//初始化参数
     InitStoneSides(true);//初始化棋子
 
+    connect(_ResultWidget,SIGNAL(sigBackForm()),this,SLOT(slotHandleBackForm()));
+    this->setWindowIcon(QIcon(":/new/prefix1/res/logo.png"));
+
 }
 void Board::InitGame()
 {
@@ -38,7 +41,7 @@ void Board::InitGame()
     connect(this,SIGNAL(sigRedStop()),this,SLOT(slotRedStop()));
     connect(this,SIGNAL(sigBlackStart()),this,SLOT(slotBlackStart()));
     connect(this,SIGNAL(sigBlackStop()),this,SLOT(slotBlackStop()));
-
+    connect(m_surrenderbutton,SIGNAL(clicked()),this,SLOT(slotSurrender()));
     connect(_ResultWidget,SIGNAL(sigAgainGame()),this,SLOT(slotRestore()));
 
 }
@@ -66,6 +69,7 @@ void Board::slotBlackTime()
     if(--m_BlackTime==0)
     {
         //保留
+
     }
     char TIME[20];
     sprintf(TIME,"黑方局时：%d:%d",min,sec);
@@ -233,6 +237,7 @@ void Board::setupBoardFacade()
       connect(m_undobutton,SIGNAL(clicked()),this,SLOT(slotUndoStep()));//连接悔棋的槽函数
     //qDebug()<<"Size:"<<this->size();
       this->resize(600,480);//设置棋盘大小
+      this->setWindowFlags(Qt::WindowCloseButtonHint|Qt::WindowMinimizeButtonHint);//不能最大化
 
 }
 void Board:: InitStoneSides(bool sides)
@@ -1440,7 +1445,18 @@ void Board::DrawBoard(QPainter &painter)
      painter.drawLine(QPoint(9*d-15,7*d+4),QPoint(d*9-4,d*7+4));
      painter.drawLine(QPoint(9*d-4,d*7+15),QPoint(d*9-4,d*7+4));
 }
+void Board::slotSurrender()
+{
+    _ResultWidget->InitInfo("朽","输",1800,"电脑","赢",10000);
+    _ResultWidget->show();
 
+}
+
+void Board::slotHandleBackForm()
+{
+    emit sigHandleBackForm();//返回主界面
+    this->close();//关闭当前窗口
+}
 
 
 
