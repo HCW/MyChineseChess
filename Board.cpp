@@ -961,28 +961,18 @@ bool Board::canMoveJiang(int moveID, int row, int col, int killid)
       2、每次只能走一格，而且只能对角线行走
       */
 
-     //1、判断是否在九宫格内，先判断是不是红方
-     if(stone[moveID].m_type==Stone::SHI)
-     {
-//         if(stone[moveID].m_red)//是红方
-//         {
-//             if(row<7||(col<3)||col>5)
-//                 return false;
-//         }
-//         else//黑方
-//         {
-//             if(row>2||(col<3)||col>5)
-//                 return false;
-//         }
-         //  2、每次只能走一格，而且只能对角线行走
-         int dx=stone[moveID].m_row-row;
-         int dy=stone[moveID].m_col-col;//dx，dy绝对值必定是都等于1才是合法走法，不能直线走
-         int d=abs(dx)*10+abs(dy);//两个数其中一个乘以10再相加，如果是对角线则是：10*1+1=11；其他情况都得不到11
-         if(d==11)
-             return true;
-         else
-             return false;
+     GetRowCol(row1, col1, moveID);
+     int r = relation(row1, col1, row, col);
+     if(r != 11) return false;
 
+     if(col < 3 || col > 5) return false;
+     if(isBottomSide(moveID))
+     {
+         if(row < 7) return false;
+     }
+     else
+     {
+         if(row > 2) return false;
      }
      return true;
  }
